@@ -171,6 +171,11 @@ pip install -r requirements.txt
 
 * [ ] CLI interface for quick prompts
 * [ ] Web UI (FastAPI / Streamlit)
+    * [ ] Create a new `app.py` file for the Streamlit app.
+    * [ ] Add a title and description to the Streamlit app.
+    * [ ] Create two text areas for the user to input the candidate and referrer profiles.
+    * [ ] Add a button to trigger the referral pitch generation.
+    * [ ] Display the generated referral pitch to the user.
 * [ ] Job description parsing & matching
 * [ ] Tone/style selectors (friendly / formal / enthusiastic)
 
