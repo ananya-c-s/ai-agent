@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from typing_extensions import TypedDict, Annotated
+from typing_extensions import TypedDict
 from langgraph.graph import START, StateGraph, END
 from langchain_ollama import ChatOllama
 
@@ -7,42 +7,34 @@ CANDIDATE_PROFILE = 'profile2.txt'
 RECEIVER_PROFILE = 'profile1.txt'
 
 
-def custom_reducer(obj1, obj2):
-  return obj2
-
-
 class SharedState(TypedDict):
   """
   Represents the state of our graph.
   """
-  candidate_profile: Annotated[str, custom_reducer]
-  receiver_profile: Annotated[str, custom_reducer]
-
-  candidate_profile_content: Annotated[str, custom_reducer]
-  receiver_profile_content: Annotated[str, custom_reducer]
+  candidate_profile_content: str
+  receiver_profile_content: str
   
-  candidate_profile_information: Annotated[str, custom_reducer]
-  receiver_profile_information: Annotated[str, custom_reducer]
+  candidate_profile_information: str
+  receiver_profile_information: str
 
-  pitch: Annotated[str, custom_reducer]
-
-
-def get_profile_content(profile) -> str:
-    """ Get Profile data from Linkedin profile url or from a Profile file."""
-    profile = open('./profiles/' + profile, 'r')
-    profile_content = profile.read()
-    return profile_content
+  pitch: str
 
 
 def get_candidate_profile_content(shared_state: SharedState) -> str:
-    """ Get Candidate Profile data from Linkedin profile url or from a Profile file."""
-    shared_state['candidate_profile_content'] = get_profile_content(shared_state['candidate_profile'])
+    """ Get Profile data from Linkedin profile url or from a Profile file."""
+    with open('./profiles/' + CANDIDATE_PROFILE, 'r') as f:
+        profile_content = f.read()
+    
+    shared_state['candidate_profile_content'] = profile_content
     return shared_state
 
 
 def get_receiver_profile_content(shared_state: SharedState) -> str:
-    """ Get Receiver Profile data from Linkedin profile url or from a Profile file."""
-    shared_state['receiver_profile_content'] = get_profile_content(shared_state['receiver_profile'])
+    """ Get Profile data from Linkedin profile url or from a Profile file."""
+    with open('./profiles/' + RECEIVER_PROFILE, 'r') as f:
+        profile_content = f.read()
+    
+    shared_state['receiver_profile_content'] = profile_content
     return shared_state
 
 
@@ -116,8 +108,6 @@ def write_a_referral_pitch(shared_state: SharedState):
 
 
 def build_graph():
-  load_dotenv()
-
   # Building a Graph
   # State of the Graph that will be shared among nodes.
   workflow = StateGraph(SharedState)
@@ -137,16 +127,13 @@ def build_graph():
   workflow.add_edge("write_a_referral_pitch", END)
 
   graph = workflow.compile()
-
-  response = graph.invoke({
-      'candidate_profile': CANDIDATE_PROFILE,
-      'receiver_profile': RECEIVER_PROFILE,
-  })
-
-  # print(graph.get_graph().draw_mermaid())
-
-  return response
+  return graph
 
 
-agent_response = build_graph()
-print(f'Referral Pitch {agent_response["pitch"]}')
+if __name__ == "__main__":
+    load_dotenv()
+    graph = build_graph()
+
+    response = graph.invoke({})
+
+    print(f'Referral Pitch {response["pitch"]}')
